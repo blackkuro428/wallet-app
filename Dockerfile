@@ -11,6 +11,10 @@ COPY . /app
 # Composerで依存関係をインストール
 RUN composer install --optimize-autoloader --no-interaction --ignore-platform-reqs
 
+# CSSやJSを本番用にビルドしてmanifest.jsonを作る
+RUN apt-get update && apt-get install -y nodejs npm
+RUN npm install && npm run build
+
 # 権限の調整
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 
