@@ -8,8 +8,8 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
 COPY . /app
 
-# Composerで依存関係をインストール（今度はツールが見つかるので通るはずです！）
-RUN composer install --no-dev --optimize-autoloader
+# Composerで依存関係をインストール
+RUN composer install --optimize-autoloader --no-interaction --ignore-platform-reqs
 
 # 権限の調整
 RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
