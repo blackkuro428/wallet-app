@@ -3,9 +3,12 @@ FROM dunglas/frankenphp:latest
 # 必要なPHP拡張のインストールと準備
 RUN install-php-extensions pdo_pgsql pgsql
 
+#【追加】ComposerをDockerの中に持ってくる
+COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
+
 COPY . /app
 
-# Composerで依存関係をインストール
+# Composerで依存関係をインストール（今度はツールが見つかるので通るはずです！）
 RUN composer install --no-dev --optimize-autoloader
 
 # 権限の調整
