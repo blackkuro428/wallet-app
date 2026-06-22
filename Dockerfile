@@ -17,4 +17,4 @@ RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache
 ENV PORT=80
 EXPOSE 80
 
-CMD ["php", "artisan", "octane:start", "--server=frankenphp", "--host=0.0.0.0", "--port=80"]
+CMD ["php", "artisan", "serve", "--host=0.0.0.0", "--port=80"]
