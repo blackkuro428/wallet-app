@@ -30,4 +30,28 @@ class RecordRequest extends FormRequest
             'memo' => 'nullable|string|max:500',
         ];
     }
+
+    /* エラーメッセージカスタム */
+    public function messages(): array {
+        return [
+            'required'=>':attribute は必須項目です',
+            'date'=>':attribute は正しい日付形式で入力してください',
+            'integer'=>':attribute は整数で入力してください',
+            'in'=>'不正な :attribute が選択されました',
+            'exsists'=>'選択された :attribute は登録されていません',
+            'max'=>':attribute は :max 文字以内で入力してください',
+            'amount.min'=>'金額は1円以上で入力してください',
+        ];
+    }
+
+    /* attribute定義 */
+    public function attributes(): array {
+        return [
+            'type'=>'収支タイプ',
+            'date'=>'日付',
+            'amount'=>'金額',
+            'category_id'=>'カテゴリー',
+            'memo'=>'メモ',
+        ];
+    }
 }

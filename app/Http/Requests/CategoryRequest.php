@@ -33,4 +33,19 @@ class CategoryRequest extends FormRequest
                     ],
         ];
     }
+
+    public function messages(): array {
+        return [
+            'required'=>':attribute は必須項目です',
+            'in'=>'不正な :attribute が選択されました',
+            'max'=>':attribute は :max 文字以内で入力してください',
+        ];
+    }
+
+    public function attributes(): array {
+        return [
+            'type'=>'収支タイプ',
+            'name'=>'カテゴリー名',
+        ];
+    }
 }

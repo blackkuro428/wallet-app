@@ -60,6 +60,10 @@
 <div class="mb-6 text-left">
     <label for="memo" class="block text-xl mb-2">メモ</label>
     <textarea id="memo" name="memo" rows="10" class="w-full max-w-[400px] rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500">{{ old('memo', $record->memo ?? '') }}</textarea>
+
+    @error('memo')
+    <p class="text-red-600 text-sm mt-1">{{$message}}</p>
+    @enderror
 </div>
 
 <script>

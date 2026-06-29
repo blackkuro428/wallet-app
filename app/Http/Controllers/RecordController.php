@@ -35,13 +35,80 @@ class RecordController extends Controller
     }
 
     // 収支履歴
-    public function history() : View {
-        // ログインユーザーの収支データを降順に取得(カテゴリーも一緒に取得)
+    public function history(Request $request) : View {
+        // ログインユーザー取得
         /** @var \App\Models\User $user */
         $user = Auth::user();
-        $records = $user->records()->with('category')->orderBy('date', 'desc')->orderBy('created_at', 'desc')->paginate(10);
 
-        return view('records.history', compact('records'));
+        // クエリパラメータ取得
+        $view = $request->query('view');
+
+        if($view == "analytics") {
+            // 収支内訳を取得（支出のみ・日時の降順）
+            $categoryData = Record::with('category')->where('user_id', $user->id)
+                ->where('type', 1)->orderBy('date', 'desc')->get();
+
+            // 月ごとにグループ化・月ごとの支出合計計算
+            $analyticsData = $categoryData->groupBy(function ($record) {
+                // 日付から年月を取り出す（文字列のため1文字目から切り取り）
+                return substr($record->date, 0, 7);
+            })->map(function ($items) {
+                // 月ごとの合計支出額算出
+                $monthTotal = $items->sum('amount');
+
+                // 各カテゴリーの合計額・割合(%)算出
+                $categoryRatio = $items->groupBy('category_id')->map(function ($recordsOfCategory) use($monthTotal) {
+                    // カテゴリー名取得（カテゴリー別配列の先頭データを取得）
+                    $firstRecord = $recordsOfCategory->first();
+                    // カテゴリーの合計額算出
+                    $categoryTotal = $recordsOfCategory->sum('amount');
+
+                    // 連想配列をオブジェクト型にキャスト
+                    return (object)[
+                        'category_name' => $firstRecord->category ? $firstRecord->category->name : '未分類',  // カテゴリー名
+                        'total_amount' => $categoryTotal,  // カテゴリー合計額
+                        'percentage' => $monthTotal > 0 ? round(($categoryTotal / $monthTotal) * 100) : 0  // カテゴリー金額割合（小数点以下四捨五入）
+                    ];
+                })->sortByDesc('total_amount');  // 金額が大きい順にソート
+
+                // 月ごとの合計金額、カテゴリーごとの集計データ
+                return ['month_total' => $monthTotal, 'categories' => $categoryRatio];
+            });
+
+            // 収支履歴のビュー、支出内訳、クエリパラメータを返す
+            return view('records.history', compact('analyticsData', 'view'));
+        }
+
+        // ログインユーザーの収支データを降順に取得(カテゴリーも一緒に取得)
+        $records = $user->records()->with('category')->orderBy('date', 'desc')->orderBy('created_at', 'desc')->get();
+
+        // 年月ごとにまとめるための配列
+        $historyByMonth = [];
+
+        foreach($records as $record) {
+            // 年月取得
+            $monthkey = substr($record->date, 0, 7);
+
+            // 年月のキーがない場合は配列に代入
+            if(!isset($historyByMonth[$monthkey])) {
+                $historyByMonth[$monthkey] = ['records' => [], 'monthTotal' => 0];
+            }
+
+            // 年月キーに収支データ追加
+            $historyByMonth[$monthkey]['records'][] = $record;
+
+            // 支出合計算出
+            if($record->type == 0) {
+                // 収入は加算
+                $historyByMonth[$monthkey]['monthTotal'] += $record->amount;
+            }
+            else {
+                // 支出は減算
+                $historyByMonth[$monthkey]['monthTotal'] -= $record->amount;
+            }
+        }
+
+        return view('records.history', compact('historyByMonth', 'view'));
     }
 
     // 収支詳細

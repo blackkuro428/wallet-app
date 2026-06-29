@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="max-w-7xl mx-[5px] sm:mx-auto px-6 lg:px-8 py-12">
+    <div class="max-w-7xl mx-auto px-4 lg:px-8 py-12">
         <div class="mb-6">
             <a href="{{route('categories.index')}}" class="hover:text-gray-900 text-xl flex items-center gap-1">
                 &lt; 戻る
